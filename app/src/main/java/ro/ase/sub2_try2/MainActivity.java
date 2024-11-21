@@ -8,24 +8,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -56,23 +50,20 @@ public class MainActivity extends AppCompatActivity {
         }
         if (item.getItemId() == R.id.menu_option_details) {
             ExecutorService executorService = Executors.newCachedThreadPool();
-            Future<String> futureString = executorService.submit(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    String link = "https://pastebin.com/raw/VqZmyPrU";
-                    StringBuilder sb = new StringBuilder();
+            Future<String> futureString = executorService.submit(() -> {
+                String link = "https://pastebin.com/raw/VqZmyPrU";
+                StringBuilder sb = new StringBuilder();
 
-                    HttpURLConnection urlConnection = (HttpURLConnection) new URL(link).openConnection();
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            sb.append(line);
-                        }
+                HttpURLConnection urlConnection = (HttpURLConnection) new URL(link).openConnection();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
                     }
-
-                    urlConnection.disconnect();
-                    return sb.toString();
                 }
+
+                urlConnection.disconnect();
+                return sb.toString();
             });
             executorService.shutdown();
             try {
@@ -96,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                         if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                             patients.add((Patient) result.getData().getSerializableExtra(AddPatientActivity.SEND_PATIENT_KEY));
                             adapter.notifyDataSetChanged();
-                            adapter.sort((p1, p2) -> Float.compare(((Patient) p1).getExaminationCost(), ((Patient) p2).getExaminationCost()));
+                            adapter.sort((p1, p2) -> Float.compare(p1.getExaminationCost(), p2.getExaminationCost()));
                         }
                     }
                 });
